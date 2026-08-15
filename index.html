@@ -1,1 +1,988 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>خمّن الكلمة</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
 
+        body {
+            background: #050b18;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            padding: 10px;
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            background: #050b18;
+            border-radius: 24px;
+            max-width: 440px;
+            width: 100%;
+            padding: 16px 14px 20px;
+            position: relative;
+            box-shadow: 0 0 40px rgba(10, 40, 80, 0.3);
+        }
+
+        /* ---- Close button (×) ---- */
+        #close-btn {
+            position: absolute;
+            top: 6px;
+            right: 12px;
+            font-size: 32px;
+            color: #f5faff;
+            cursor: pointer;
+            opacity: 0.7;
+            line-height: 1;
+            padding: 4px 10px;
+            z-index: 20;
+        }
+        #close-btn:hover {
+            opacity: 1;
+        }
+
+        /* ---- Category ---- */
+        #category-row {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin: 30px 0 10px 0;
+        }
+        .cat-btn {
+            padding: 8px 0;
+            flex: 1;
+            max-width: 78px;
+            background: #0a2650;
+            border: 1px solid #1a4d7a;
+            border-radius: 10px;
+            color: #f5faff;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            touch-action: manipulation;
+        }
+        .cat-btn.active {
+            background: #fcc700;
+            border-color: #fcc700;
+            color: #050b18;
+        }
+        .cat-btn:active {
+            transform: scale(0.95);
+        }
+
+        #selected-category-label {
+            color: #fcc700;
+            font-size: 15px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 6px;
+            margin-bottom: 6px;
+        }
+
+        /* ---- Grid (5 rows × 4 cols) ---- */
+        #grid-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: 4px 0 8px 0;
+        }
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            max-width: 320px;
+            width: 100%;
+            aspect-ratio: 4 / 5;
+        }
+        .cell {
+            background: #0e1b2e;
+            border: 2px solid #1a4d7a;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: #f5faff;
+            transition: background 0.2s, border-color 0.2s;
+            aspect-ratio: 1 / 1;
+        }
+        .cell.green {
+            background: #05b84d;
+            border-color: #05b84d;
+        }
+        .cell.orange {
+            background: #f57a00;
+            border-color: #f57a00;
+        }
+        .cell.gray {
+            background: #4d5566;
+            border-color: #4d5566;
+        }
+        .cell.dark {
+            background: #0e1b2e;
+            border-color: #1a4d7a;
+        }
+
+        /* ---- Stats & Info Panels ---- */
+        #panels-row {
+            display: flex;
+            gap: 10px;
+            margin: 6px 0 6px 0;
+        }
+        .panel {
+            flex: 1;
+            background: #081224;
+            border: 1px solid #1a4d7a;
+            border-radius: 14px;
+            padding: 8px 4px;
+            text-align: center;
+            min-height: 90px;
+        }
+        .panel-title {
+            color: #fcc700;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .panel-sub {
+            color: #f5faff;
+            font-size: 11px;
+            margin-top: 2px;
+        }
+        .panel-value {
+            color: #fcc700;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .panel-value.green {
+            color: #05b84d;
+        }
+        .panel-value.gray {
+            color: #8a94a6;
+        }
+
+        /* ---- Control buttons ---- */
+        #controls-row {
+            display: flex;
+            gap: 10px;
+            margin: 4px 0 6px 0;
+        }
+        .ctrl-btn {
+            flex: 1;
+            padding: 12px 0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            touch-action: manipulation;
+            border: none;
+        }
+        .ctrl-btn:active {
+            transform: scale(0.95);
+        }
+        .ctrl-btn.reset {
+            background: #0a4b8a;
+            color: #f5faff;
+        }
+        .ctrl-btn.backspace {
+            background: #36414f;
+            color: #f5faff;
+        }
+
+        /* ---- Keyboard ---- */
+        #keyboard {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin: 6px 0 6px 0;
+            align-items: center;
+        }
+        .kb-row {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+        .kb-key {
+            background: #0d1f33;
+            border: 1px solid #1a4d7a;
+            border-radius: 8px;
+            color: #f5faff;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px 0;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.12s;
+            min-width: 32px;
+            flex: 1;
+            max-width: 44px;
+            touch-action: manipulation;
+        }
+        .kb-key:active {
+            transform: scale(0.92);
+        }
+        .kb-key.used-wrong {
+            background: #2a333f;
+            color: #7a8496;
+            border-color: #2a333f;
+        }
+        .kb-key.used-correct {
+            background: #0c7a33;
+            border-color: #0c7a33;
+            color: #f5faff;
+        }
+
+        /* ---- Color guide ---- */
+        #guide {
+            background: #081224;
+            border: 1px solid #1a4d7a;
+            border-radius: 12px;
+            padding: 6px 8px;
+            margin-top: 4px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2px;
+        }
+        .guide-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #f5faff;
+            font-size: 11px;
+        }
+        .guide-swatch {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        /* ---- Message overlay ---- */
+        #message-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            opacity: 0;
+            transition: opacity 0.25s;
+            border-radius: 24px;
+        }
+        #message-overlay.show {
+            opacity: 1;
+        }
+        #message-box {
+            background: #081224;
+            border: 2px solid #fcc700;
+            border-radius: 16px;
+            padding: 16px 22px;
+            max-width: 85%;
+            text-align: center;
+            pointer-events: auto;
+        }
+        #message-title {
+            color: #fcc700;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        #message-sub {
+            color: #f5faff;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        /* ---- Responsive fine-tune ---- */
+        @media (max-width: 420px) {
+            .cell {
+                font-size: 22px;
+            }
+            .kb-key {
+                font-size: 15px;
+                padding: 8px 0;
+                min-width: 28px;
+                max-width: 38px;
+            }
+            .cat-btn {
+                font-size: 12px;
+                padding: 6px 0;
+            }
+            .panel {
+                min-height: 78px;
+                padding: 6px 2px;
+            }
+            .panel-value {
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 370px) {
+            .cell {
+                font-size: 18px;
+            }
+            .kb-key {
+                font-size: 13px;
+                padding: 6px 0;
+                min-width: 24px;
+                max-width: 32px;
+            }
+            .guide-item {
+                font-size: 9px;
+            }
+            .guide-swatch {
+                width: 12px;
+                height: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- Close button (×) -->
+        <div id="close-btn">×</div>
+
+        <!-- Categories -->
+        <div id="category-row">
+            <div class="cat-btn active" data-cat="الكل">الكل</div>
+            <div class="cat-btn" data-cat="بلدان">بلدان</div>
+            <div class="cat-btn" data-cat="أكل">أكل</div>
+            <div class="cat-btn" data-cat="حيوانات">حيوانات</div>
+        </div>
+        <div id="selected-category-label">الفئة: الكل</div>
+
+        <!-- Grid -->
+        <div id="grid-wrapper">
+            <div id="grid"></div>
+        </div>
+
+        <!-- Stats + Info panels -->
+        <div id="panels-row">
+            <div class="panel" id="stats-panel">
+                <div class="panel-title">الإحصاءيات</div>
+                <div class="panel-sub" id="win-ratio">نسبة الفوز: 0%</div>
+                <div class="panel-sub" id="win-count">الفوز: 0</div>
+                <div class="panel-sub" id="games-played">لعبت: 0/3</div>
+                <div class="panel-sub" id="highest-score">أعلى نقاط: 0</div>
+            </div>
+            <div class="panel" id="info-panel">
+                <div class="panel-title" id="game-number">اللعبة 1/3</div>
+                <div class="panel-sub">الحركات</div>
+                <div class="panel-value" id="move-count">0</div>
+                <div class="panel-sub" style="margin-top:4px;">النقاط</div>
+                <div class="panel-value" id="score-display">0</div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div id="controls-row">
+            <div class="ctrl-btn reset" id="reset-btn">إعادة ↻</div>
+            <div class="ctrl-btn backspace" id="backspace-btn">حذف ⌫</div>
+        </div>
+
+        <!-- Keyboard -->
+        <div id="keyboard"></div>
+
+        <!-- Color guide -->
+        <div id="guide">
+            <span class="guide-item"><span class="guide-swatch" style="background:#05b84d;"></span>صحيح</span>
+            <span class="guide-item"><span class="guide-swatch" style="background:#f57a00;"></span>موجود بمكان آخر</span>
+            <span class="guide-item"><span class="guide-swatch" style="background:#4d5566;"></span>غير موجود</span>
+        </div>
+
+        <!-- Message overlay -->
+        <div id="message-overlay">
+            <div id="message-box">
+                <div id="message-title"></div>
+                <div id="message-sub"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // =============================================================
+            // DATA
+            // =============================================================
+            const ANIMAL_WORDS = [
+                'خروف','حمار','حصان','ثعلب','بقرة','ماعز','ناقة','سنور','طائر','غراب',
+                'بومة','نحلة','نملة','دبور','عقرب','سمكة','سمور','حوتة','أسود','ذئاب',
+                'نمور','فيلة','قرود','جمال','دجاج','كلبة','لبوة','قردة','فهدة','نمرة','بجعة'
+            ];
+            const FOOD_WORDS = [
+                'تفاح','بطيخ','رمان','لبنة','جبنة','فلفل','خيار','سمسم','طماط','طحين',
+                'زبدة','شعير','مربى','حساء','كعكة','عجوة','موزة','لوزة','جوزة','خبزة',
+                'رغيف','برغل','قهوة','حليب','زبيب','عدسة','حمصة','فولة','بطاط'
+            ];
+            const COUNTRY_WORDS = [
+                'عمان','مالي','تشاد','تونس','غانا','بنين','نيجر','كوبا','بيرو','لاوس','توغو','عراق'
+            ];
+            const GENERAL_WORDS = [
+                'كتاب','ريال','منزل','شارع','جوال','مطبخ','مكيف','كراج','ساعة','بابا',
+                'عندي','بيتي','قلبي','روحي','عيني','نفسي','دنيا','نجمة','سحاب','طريق',
+                'مكتب','سرير','هاتف','جدار','لعبة','حاسب','جهاز','صباح','مساء','جميل',
+                'كبير','سريع','بطيء','قريب','دفتر','صورة','غرفة','حجرة','نادي','كرسي',
+                'ليلة','بحري','نهري','جبال','حائط','طعام','سماء','أرضي'
+            ];
+
+            function onlyFour(arr) {
+                const seen = new Set();
+                const result = [];
+                for (const w of arr) {
+                    if (w.length === 4 && !seen.has(w)) {
+                        seen.add(w);
+                        result.push(w);
+                    }
+                }
+                return result;
+            }
+
+            const ANIMALS = onlyFour(ANIMAL_WORDS);
+            const FOODS = onlyFour(FOOD_WORDS);
+            const COUNTRIES = onlyFour(COUNTRY_WORDS);
+            const GENERALS = onlyFour(GENERAL_WORDS);
+            const ALL_WORDS = [...new Set([...ANIMALS, ...FOODS, ...COUNTRIES, ...GENERALS])];
+
+            // =============================================================
+            // STATE
+            // =============================================================
+            let state = {
+                currentCategory: 'الكل',
+                wordList: ALL_WORDS,
+                wordToGuess: '',
+                selectedLetters: Array(20).fill(''),
+                currentRow: 0,
+                gameOver: false,
+                waitingNextRound: false,
+                retryMessageActive: false,
+                moveCount: 0,
+                score: 0,
+                winCount: 0,
+                gamesPlayed: 0,
+                highestScore: 0,
+                usedWords: new Set(),
+                // keyboard state: which letters have been used and their status
+                keyStatus: {}, // letter -> 'correct' | 'wrong' | 'present' | null
+                // stored for persistence across page reload (localStorage)
+            };
+
+            // =============================================================
+            // DOM REFS
+            // =============================================================
+            const gridEl = document.getElementById('grid');
+            const keyboardEl = document.getElementById('keyboard');
+            const catBtns = document.querySelectorAll('.cat-btn');
+            const selectedCatLabel = document.getElementById('selected-category-label');
+            const winRatioEl = document.getElementById('win-ratio');
+            const winCountEl = document.getElementById('win-count');
+            const gamesPlayedEl = document.getElementById('games-played');
+            const highestScoreEl = document.getElementById('highest-score');
+            const gameNumberEl = document.getElementById('game-number');
+            const moveCountEl = document.getElementById('move-count');
+            const scoreDisplayEl = document.getElementById('score-display');
+            const resetBtn = document.getElementById('reset-btn');
+            const backspaceBtn = document.getElementById('backspace-btn');
+            const msgOverlay = document.getElementById('message-overlay');
+            const msgTitle = document.getElementById('message-title');
+            const msgSub = document.getElementById('message-sub');
+
+            let cellElements = [];
+            let kbKeyElements = [];
+
+            // =============================================================
+            // PERSISTENCE (localStorage)
+            // =============================================================
+            function saveState() {
+                try {
+                    const data = {
+                        winCount: state.winCount,
+                        gamesPlayed: state.gamesPlayed,
+                        highestScore: state.highestScore,
+                        usedWords: [...state.usedWords],
+                        score: state.score,
+                    };
+                    localStorage.setItem('guessWord_state', JSON.stringify(data));
+                } catch (_) {}
+            }
+
+            function loadState() {
+                try {
+                    const raw = localStorage.getItem('guessWord_state');
+                    if (!raw) return;
+                    const data = JSON.parse(raw);
+                    if (data.winCount !== undefined) state.winCount = data.winCount;
+                    if (data.gamesPlayed !== undefined) state.gamesPlayed = data.gamesPlayed;
+                    if (data.highestScore !== undefined) state.highestScore = data.highestScore;
+                    if (data.usedWords) state.usedWords = new Set(data.usedWords);
+                    if (data.score !== undefined) state.score = data.score;
+                } catch (_) {}
+            }
+
+            function resetSaveFiles() {
+                state.winCount = 0;
+                state.gamesPlayed = 0;
+                state.score = 0;
+                state.usedWords = new Set();
+                state.highestScore = 0;
+                saveState();
+            }
+
+            // =============================================================
+            // HELPERS
+            // =============================================================
+            function chooseNewWord() {
+                let available = state.wordList.filter(w => !state.usedWords.has(w));
+                if (available.length === 0) {
+                    // reset used words within this category
+                    available = state.wordList.slice();
+                    state.usedWords = new Set();
+                    if (available.length === 0) {
+                        available = ALL_WORDS.slice();
+                        state.usedWords = new Set();
+                    }
+                }
+                const word = available[Math.floor(Math.random() * available.length)];
+                state.usedWords.add(word);
+                saveState();
+                return word;
+            }
+
+            function calculatePercentage(row) {
+                const pcts = [100, 80, 60, 40, 20];
+                return pcts[row] || 20;
+            }
+
+            function isGameLimitReached() {
+                return state.gamesPlayed >= 3;
+            }
+
+            // =============================================================
+            // RENDER
+            // =============================================================
+            function renderGrid() {
+                gridEl.innerHTML = '';
+                cellElements = [];
+                for (let i = 0; i < 20; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell dark';
+                    cell.dataset.index = i;
+                    gridEl.appendChild(cell);
+                    cellElements.push(cell);
+                }
+                updateGridFromState();
+            }
+
+            function updateGridFromState() {
+                for (let i = 0; i < 20; i++) {
+                    const cell = cellElements[i];
+                    const letter = state.selectedLetters[i] || '';
+                    cell.textContent = letter;
+                    // Keep color unless it's been set by checkGuess
+                    // We'll manage colors via the cell classes set in checkGuess
+                }
+            }
+
+            function renderKeyboard() {
+                const letters = [
+                    'ا','ب','ت','ث','ج','ح','خ','د','ذ','ر',
+                    'ز','س','ش','ص','ض','ط','ظ','ع','غ','ف',
+                    'ق','ك','ل','م','ن','ه','و','ي'
+                ];
+                const rows = [
+                    letters.slice(0, 10),
+                    letters.slice(10, 20),
+                    letters.slice(20, 28)
+                ];
+                keyboardEl.innerHTML = '';
+                kbKeyElements = [];
+                for (const row of rows) {
+                    const rowDiv = document.createElement('div');
+                    rowDiv.className = 'kb-row';
+                    for (const letter of row) {
+                        const key = document.createElement('div');
+                        key.className = 'kb-key';
+                        key.textContent = letter;
+                        key.dataset.letter = letter;
+                        key.addEventListener('click', () => pressLetter(letter));
+                        key.addEventListener('touchend', (e) => { e.preventDefault();
+                            pressLetter(letter); });
+                        rowDiv.appendChild(key);
+                        kbKeyElements.push(key);
+                    }
+                    keyboardEl.appendChild(rowDiv);
+                }
+                updateKeyboardColors();
+            }
+
+            function updateKeyboardColors() {
+                for (const key of kbKeyElements) {
+                    const letter = key.dataset.letter;
+                    const status = state.keyStatus[letter] || null;
+                    key.className = 'kb-key';
+                    if (status === 'correct') {
+                        key.classList.add('used-correct');
+                    } else if (status === 'wrong') {
+                        key.classList.add('used-wrong');
+                    } else if (status === 'present') {
+                        key.classList.add('used-correct');
+                        key.style.background = '#c97a00';
+                        key.style.borderColor = '#c97a00';
+                    } else {
+                        key.style.background = '';
+                        key.style.borderColor = '';
+                    }
+                }
+            }
+
+            function updateStats() {
+                const ratio = state.gamesPlayed > 0 ? (state.winCount / state.gamesPlayed) * 100 : 0;
+                winRatioEl.textContent = `نسبة الفوز: ${ratio.toFixed(1)}%`;
+                winCountEl.textContent = `الفوز: ${state.winCount}`;
+                gamesPlayedEl.textContent = `لعبت: ${state.gamesPlayed}/3`;
+                highestScoreEl.textContent = `أعلى نقاط: ${state.highestScore}`;
+                gameNumberEl.textContent = `اللعبة ${Math.min(state.gamesPlayed + 1, 3)}/3`;
+                moveCountEl.textContent = String(state.moveCount);
+                scoreDisplayEl.textContent = String(state.score);
+            }
+
+            function updateCategories() {
+                for (const btn of catBtns) {
+                    const cat = btn.dataset.cat;
+                    btn.classList.toggle('active', cat === state.currentCategory);
+                }
+                selectedCatLabel.textContent = `الفئة: ${state.currentCategory}`;
+            }
+
+            // =============================================================
+            // GAME LOGIC
+            // =============================================================
+            function startNewRound() {
+                state.waitingNextRound = false;
+                state.retryMessageActive = false;
+                hideMessage();
+
+                state.wordToGuess = chooseNewWord();
+                state.selectedLetters = Array(20).fill('');
+                state.currentRow = 0;
+                state.moveCount = 0;
+                // reset keyboard status for this round
+                state.keyStatus = {};
+                updateGridFromState();
+                updateStats();
+                updateKeyboardColors();
+                // Reset cell colors
+                for (const cell of cellElements) {
+                    cell.className = 'cell dark';
+                    cell.textContent = '';
+                }
+                // re-fill selected letters from state
+                updateGridFromState();
+            }
+
+            function pressLetter(letter) {
+                if (state.gameOver || state.waitingNextRound) return;
+
+                const start = state.currentRow * 4;
+                const end = start + 4;
+
+                for (let i = start; i < end; i++) {
+                    if (state.selectedLetters[i] === '') {
+                        state.selectedLetters[i] = letter;
+                        state.moveCount += 1;
+                        moveCountEl.textContent = String(state.moveCount);
+                        updateGridFromState();
+
+                        // Check if row is complete
+                        if (state.selectedLetters.slice(start, end).every(l => l !== '')) {
+                            checkGuess();
+                        }
+                        return;
+                    }
+                }
+            }
+
+            function handleBackspace() {
+                if (state.gameOver || state.waitingNextRound) return;
+                const start = state.currentRow * 4;
+                const end = start + 4;
+                for (let i = end - 1; i >= start; i--) {
+                    if (state.selectedLetters[i] !== '') {
+                        state.selectedLetters[i] = '';
+                        state.moveCount = Math.max(0, state.moveCount - 1);
+                        moveCountEl.textContent = String(state.moveCount);
+                        updateGridFromState();
+                        return;
+                    }
+                }
+            }
+
+            function checkGuess() {
+                const start = state.currentRow * 4;
+                const end = start + 4;
+                const guess = state.selectedLetters.slice(start, end).join('');
+                const word = state.wordToGuess;
+
+                // Color the cells
+                for (let i = 0; i < 4; i++) {
+                    const idx = start + i;
+                    const letter = state.selectedLetters[idx];
+                    const cell = cellElements[idx];
+                    if (letter === word[i]) {
+                        cell.className = 'cell green';
+                        state.keyStatus[letter] = 'correct';
+                    } else if (word.includes(letter)) {
+                        cell.className = 'cell orange';
+                        if (state.keyStatus[letter] !== 'correct') {
+                            state.keyStatus[letter] = 'present';
+                        }
+                    } else {
+                        cell.className = 'cell gray';
+                        if (state.keyStatus[letter] !== 'correct' && state.keyStatus[letter] !== 'present') {
+                            state.keyStatus[letter] = 'wrong';
+                        }
+                    }
+                }
+                updateKeyboardColors();
+
+                // ---- CORRECT ----
+                if (guess === word) {
+                    state.waitingNextRound = true;
+                    const roundPct = calculatePercentage(state.currentRow);
+                    state.score += roundPct;
+                    state.winCount += 1;
+                    state.gamesPlayed += 1;
+                    if (state.score > state.highestScore) {
+                        state.highestScore = state.score;
+                    }
+                    saveState();
+                    updateStats();
+
+                    showMessage('صحيح! 🎉', `${word} • التالية بعد 5 ثوانٍ`);
+                    setTimeout(() => {
+                        if (!state.gameOver) {
+                            if (isGameLimitReached()) {
+                                finishThreeGames();
+                            } else {
+                                startNewRound();
+                            }
+                        }
+                    }, 5000);
+                    return;
+                }
+
+                // ---- WRONG ----
+                state.currentRow += 1;
+
+                if (state.currentRow >= 5) {
+                    state.gamesPlayed += 1;
+                    saveState();
+
+                    if (isGameLimitReached()) {
+                        state.waitingNextRound = true;
+                        showMessage('انتهت الألعاب', 'اضغط إعادة لبدء 3 ألعاب جديدة');
+                        updateStats();
+                        // reveal the word in the last row
+                        for (let i = 0; i < 4; i++) {
+                            const idx = start + i;
+                            cellElements[idx].textContent = word[i];
+                            cellElements[idx].className = 'cell green';
+                        }
+                        state.gameOver = true;
+                        return;
+                    } else {
+                        // reveal the word and move on after 5s
+                        for (let i = 0; i < 4; i++) {
+                            const idx = start + i;
+                            cellElements[idx].textContent = word[i];
+                            cellElements[idx].className = 'cell green';
+                        }
+                        state.waitingNextRound = true;
+                        showMessage('الكلمة الصحيحة', `${word} • التالية بعد 5 ثوانٍ`);
+                        updateStats();
+                        setTimeout(() => {
+                            if (!state.gameOver && !isGameLimitReached()) {
+                                startNewRound();
+                            }
+                        }, 5000);
+                        return;
+                    }
+                }
+
+                // ---- Retry message ----
+                state.retryMessageActive = true;
+                showMessage('حاول مرة أخرى!', 'أكمل التخمين في الصف التالي');
+                setTimeout(() => {
+                    if (state.retryMessageActive) {
+                        hideMessage();
+                        state.retryMessageActive = false;
+                    }
+                }, 1800);
+            }
+
+            function finishThreeGames() {
+                state.gameOver = true;
+                state.waitingNextRound = true;
+                if (state.score > state.highestScore) {
+                    state.highestScore = state.score;
+                    saveState();
+                }
+                showMessage('انتهت الألعاب', `الكلمة الصحيحة: ${state.wordToGuess}`);
+                updateStats();
+                // Also show the word in the grid if not already
+                const start = state.currentRow * 4;
+                for (let i = 0; i < 4; i++) {
+                    const idx = start + i;
+                    if (idx < 20) {
+                        cellElements[idx].textContent = state.wordToGuess[i] || '';
+                        cellElements[idx].className = 'cell green';
+                    }
+                }
+            }
+
+            function resetGame() {
+                if (isGameLimitReached()) {
+                    resetSaveFiles();
+                }
+                state.gameOver = false;
+                state.waitingNextRound = false;
+                state.retryMessageActive = false;
+                hideMessage();
+                // If gamesPlayed is 3 but we reset, we already reset stats above.
+                // But ensure we don't carry over a stale usedWords from a finished set.
+                if (state.gamesPlayed >= 3) {
+                    state.gamesPlayed = 0;
+                    state.winCount = 0;
+                    state.score = 0;
+                    state.usedWords = new Set();
+                    state.highestScore = 0;
+                    saveState();
+                }
+                startNewRound();
+                updateStats();
+            }
+
+            // =============================================================
+            // MESSAGE OVERLAY
+            // =============================================================
+            function showMessage(title, sub) {
+                msgTitle.textContent = title;
+                msgSub.textContent = sub || '';
+                msgOverlay.classList.add('show');
+            }
+
+            function hideMessage() {
+                msgOverlay.classList.remove('show');
+            }
+
+            // =============================================================
+            // CATEGORY
+            // =============================================================
+            function selectCategory(category) {
+                if (state.gameOver || state.waitingNextRound) return;
+
+                if (category === 'حيوانات') state.wordList = ANIMALS;
+                else if (category === 'أكل') state.wordList = FOODS;
+                else if (category === 'بلدان') state.wordList = COUNTRIES;
+                else state.wordList = ALL_WORDS;
+
+                if (state.wordList.length === 0) state.wordList = ALL_WORDS;
+
+                state.currentCategory = category;
+                // reset used words when changing category? Keep them separate.
+                state.usedWords = new Set();
+                saveState();
+                updateCategories();
+                // reset grid and start new round
+                state.gameOver = false;
+                state.waitingNextRound = false;
+                hideMessage();
+                startNewRound();
+                updateStats();
+            }
+
+            // =============================================================
+            // INIT
+            // =============================================================
+            function init() {
+                loadState();
+
+                // If gamesPlayed >= 3, reset on load so user starts fresh.
+                if (state.gamesPlayed >= 3) {
+                    resetSaveFiles();
+                }
+
+                renderGrid();
+                renderKeyboard();
+
+                // Category buttons
+                for (const btn of catBtns) {
+                    btn.addEventListener('click', () => {
+                        selectCategory(btn.dataset.cat);
+                    });
+                    btn.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        selectCategory(btn.dataset.cat);
+                    });
+                }
+
+                resetBtn.addEventListener('click', resetGame);
+                resetBtn.addEventListener('touchend', (e) => { e.preventDefault();
+                    resetGame(); });
+
+                backspaceBtn.addEventListener('click', handleBackspace);
+                backspaceBtn.addEventListener('touchend', (e) => { e.preventDefault();
+                    handleBackspace(); });
+
+                // Close button
+                document.getElementById('close-btn').addEventListener('click', () => {
+                    if (window.confirm('هل تريد إغلاق اللعبة؟')) {
+                        window.close();
+                    }
+                });
+
+                // Initialize game
+                state.wordToGuess = chooseNewWord();
+                state.selectedLetters = Array(20).fill('');
+                state.currentRow = 0;
+                state.moveCount = 0;
+                state.gameOver = false;
+                state.waitingNextRound = false;
+                state.keyStatus = {};
+                updateGridFromState();
+                updateStats();
+                updateCategories();
+                updateKeyboardColors();
+                saveState();
+
+                // Handle resize / orientation
+                window.addEventListener('resize', () => {});
+            }
+
+            // Start
+            document.addEventListener('DOMContentLoaded', init);
+        })();
+    </script>
+
+</body>
+</html>
