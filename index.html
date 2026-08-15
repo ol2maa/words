@@ -505,7 +505,8 @@ let state = {
     usedWords:[],
     keyStatus:{},
     locked:false,
-    timer:null
+    timer:null,
+    gameEnded:false  // علامة جديدة لنهاية اللعبة
 };
 
 // ============================================================
@@ -688,6 +689,7 @@ function hideMessage(){
 // ============================================================
 function startRound(){
     state.locked = false;
+    state.gameEnded = false;
     hideMessage();
     clearGrid();
     state.word = chooseWord();
@@ -695,7 +697,7 @@ function startRound(){
 }
 
 function pressLetter(letter){
-    if(state.locked) return;
+    if(state.locked || state.gameEnded) return;
 
     const start = state.row * 4;
     const end = start + 4;
@@ -717,7 +719,7 @@ function pressLetter(letter){
 }
 
 function deleteLetter(){
-    if(state.locked) return;
+    if(state.locked || state.gameEnded) return;
 
     const start = state.row * 4;
     const end = start + 4;
@@ -780,9 +782,11 @@ function checkGuess(){
         updateStats();
 
         if(state.played >= 3){
+            // انتهت الألعاب الثلاث - نهاية اللعبة
+            state.gameEnded = true;
             showMessage(
-                'انتهت الألعاب 🎉',
-                'مبروك! اضغط «إعادة» لبدء 3 ألعاب جديدة.'
+                '🎉 انتهت الألعاب 🎉',
+                'إجمالي النقاط: ' + state.score + '\nاضغط «إعادة» لبدء 3 ألعاب جديدة'
             );
         }else{
             showMessage(
@@ -792,7 +796,7 @@ function checkGuess(){
 
             clearTimeout(state.timer);
             state.timer = setTimeout(()=>{
-                if(state.played < 3 && !state.locked) startRound();
+                if(state.played < 3) startRound();
             },3000);
         }
         return;
@@ -808,9 +812,11 @@ function checkGuess(){
         state.locked = true;
 
         if(state.played >= 3){
+            // انتهت الألعاب الثلاث - نهاية اللعبة
+            state.gameEnded = true;
             showMessage(
-                'انتهت الألعاب',
-                'اضغط «إعادة» لبدء 3 ألعاب جديدة.'
+                '🏁 انتهت الألعاب 🏁',
+                'إجمالي النقاط: ' + state.score + '\nاضغط «إعادة» لبدء 3 ألعاب جديدة'
             );
             return;
         }
@@ -832,7 +838,7 @@ function checkGuess(){
 
         clearTimeout(state.timer);
         state.timer = setTimeout(()=>{
-            if(state.played < 3 && !state.locked) startRound();
+            if(state.played < 3) startRound();
         },3000);
         return;
     }
@@ -846,17 +852,18 @@ function checkGuess(){
 // ============================================================
 function resetGame(){
     clearTimeout(state.timer);
+    hideMessage();
 
-    if(state.played >= 3){
-        state.wins = 0;
-        state.played = 0;
-        state.score = 0;
-        state.best = 0;
-        state.usedWords = [];
-        save();
-    }
-
+    // تصفير كل الإحصائيات دائماً عند الضغط على إعادة
+    state.wins = 0;
+    state.played = 0;
+    state.score = 0;
+    state.best = 0;
+    state.usedWords = [];
+    state.gameEnded = false;
     state.locked = false;
+    save();
+
     startRound();
     updateStats();
 }
@@ -869,6 +876,7 @@ function selectCategory(category){
 
     state.category = category;
     state.usedWords = [];
+    state.gameEnded = false;
     save();
 
     updateCategory();
@@ -882,6 +890,7 @@ function init(){
     // تحميل الحالة
     load();
 
+    // إذا كان عدد الألعاب 3، نبدأ من الصفر
     if(state.played >= 3){
         state.wins = 0;
         state.played = 0;
@@ -931,7 +940,6 @@ function init(){
             deleteLetter();
         }else if(e.key === 'Enter'){
             e.preventDefault();
-            // نتحقق إذا كان الصف مكتملاً
             const start = state.row * 4;
             if(state.cells.slice(start,start+4).every(Boolean)){
                 checkGuess();
