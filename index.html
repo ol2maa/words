@@ -1,460 +1,791 @@
 <!DOCTYPE html>
+
 <html lang="ar" dir="rtl">
+
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
 <title>خمّن الكلمة</title>
 
 <style>
+
 *{
+
     margin:0;
+
     padding:0;
+
     box-sizing:border-box;
+
     user-select:none;
+
     -webkit-user-select:none;
+
     -webkit-tap-highlight-color:transparent;
+
 }
 
 html,body{
+
     width:100%;
+
     min-height:100%;
+
     background:#050b18;
+
     color:#f5faff;
+
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+
 }
 
 body{
+
     display:flex;
+
     justify-content:center;
+
     overflow-x:hidden;
+
     touch-action:manipulation;
+
 }
 
 #game-container{
+
     width:min(100%,440px);
+
     min-height:100svh;
+
     padding:
+
         max(8px,env(safe-area-inset-top))
+
         12px
+
         max(10px,env(safe-area-inset-bottom));
+
     position:relative;
+
     background:#050b18;
+
 }
 
 /* إغلاق */
+
 #close-btn{
+
     position:absolute;
+
     top:max(5px,env(safe-area-inset-top));
+
     right:8px;
+
     width:42px;
+
     height:42px;
+
     display:flex;
+
     align-items:center;
+
     justify-content:center;
+
     color:#f5faff;
+
     font-size:31px;
+
     line-height:1;
+
     opacity:.85;
+
     z-index:20;
+
     cursor:pointer;
+
 }
 
 /* الفئات */
+
 #category-row{
+
     display:flex;
+
     justify-content:center;
+
     gap:6px;
+
     margin:47px 0 7px;
+
 }
 
 .cat-btn{
+
     flex:1;
+
     max-width:82px;
+
     height:40px;
+
     background:#0a2650;
+
     border:1px solid #1a4d7a;
+
     border-radius:11px;
+
     color:#f5faff;
+
     font-size:14px;
+
     font-weight:800;
+
     cursor:pointer;
+
     transition:all .15s;
+
 }
 
 .cat-btn:active{
+
     transform:scale(.95);
+
 }
 
 .cat-btn.active{
+
     background:#fcc700;
+
     border-color:#fcc700;
+
     color:#050b18;
+
 }
 
 #selected-category-label{
+
     color:#fcc700;
+
     font-size:16px;
+
     font-weight:800;
+
     text-align:center;
+
     margin:3px 0 7px;
+
 }
 
-/* شبكة 4 × 5 */
+/* الشبكة */
+
 #grid-wrapper{
+
     display:flex;
+
     justify-content:center;
+
     margin:0 auto 7px;
+
 }
 
 #grid{
+
     display:grid;
+
     grid-template-columns:repeat(4,1fr);
+
     gap:6px;
+
     width:min(290px,78vw);
+
 }
 
 .cell{
+
     width:100%;
+
     aspect-ratio:1;
+
     background:#0e1b2e;
+
     border:2px solid #1a4d7a;
+
     border-radius:8px;
+
     display:flex;
+
     align-items:center;
+
     justify-content:center;
+
     font-size:25px;
+
     font-weight:800;
+
     color:#f5faff;
+
     transition:background .2s,border-color .2s;
+
 }
 
 .cell.green{
+
     background:#05b84d;
+
     border-color:#05b84d;
+
 }
 
 .cell.orange{
+
     background:#f57a00;
+
     border-color:#f57a00;
+
 }
 
 .cell.gray{
+
     background:#4d5566;
+
     border-color:#4d5566;
+
 }
 
 /* الإحصائيات */
+
 #panels-row{
+
     display:flex;
+
     gap:8px;
+
     margin:5px 0 6px;
+
 }
 
 .panel{
+
     flex:1;
+
     background:#081224;
+
     border:1px solid #1a4d7a;
+
     border-radius:14px;
+
     padding:7px 3px;
+
     text-align:center;
+
     min-height:88px;
+
 }
 
 .panel-title{
+
     color:#fcc700;
+
     font-size:15px;
+
     font-weight:800;
+
     margin-bottom:2px;
+
 }
 
 .panel-sub{
+
     color:#f5faff;
+
     font-size:11px;
+
     line-height:1.45;
+
 }
 
 .panel-value{
+
     color:#fcc700;
+
     font-size:18px;
+
     font-weight:800;
+
     line-height:1.2;
+
 }
 
 /* الأزرار */
+
 #controls-row{
+
     display:flex;
+
     gap:8px;
+
     margin:4px 0 6px;
+
 }
 
 .ctrl-btn{
+
     flex:1;
+
     height:44px;
+
     border-radius:12px;
+
     font-size:16px;
+
     font-weight:800;
+
     display:flex;
+
     align-items:center;
+
     justify-content:center;
+
     cursor:pointer;
+
     border:none;
+
     transition:transform .1s;
+
 }
 
 .ctrl-btn:active{
+
     transform:scale(.95);
+
 }
 
 .ctrl-btn.reset{
+
     background:#0a4b8a;
+
     color:#f5faff;
+
 }
 
 .ctrl-btn.backspace{
+
     background:#36414f;
+
     color:#f5faff;
+
 }
 
 /* لوحة الحروف */
+
 #keyboard{
+
     display:flex;
+
     flex-direction:column;
+
     align-items:center;
+
     gap:4px;
+
     margin:5px 0 6px;
+
 }
 
 .kb-row{
+
     display:flex;
+
     justify-content:center;
+
     gap:4px;
+
     width:100%;
+
 }
 
 .kb-key{
+
     width:clamp(29px,8.1vw,37px);
+
     height:37px;
+
     padding:0;
+
     background:#0d1f33;
+
     border:1px solid #1a4d7a;
+
     border-radius:7px;
+
     color:#f5faff;
+
     font-size:16px;
+
     font-weight:800;
+
     display:flex;
+
     align-items:center;
+
     justify-content:center;
+
     cursor:pointer;
+
     transition:all .15s;
+
 }
 
 .kb-key:active{
+
     transform:scale(.92);
+
 }
 
 .kb-key.used-wrong{
+
     background:#2a333f;
+
     color:#7a8496;
+
     border-color:#2a333f;
+
 }
 
 .kb-key.used-correct{
+
     background:#0c7a33;
+
     border-color:#0c7a33;
+
     color:#f5faff;
+
 }
 
 .kb-key.used-present{
+
     background:#c97a00;
+
     border-color:#c97a00;
+
     color:#fff;
+
 }
 
 /* دليل الألوان */
+
 #guide{
+
     background:#081224;
+
     border:1px solid #1a4d7a;
+
     border-radius:12px;
+
     min-height:48px;
+
     padding:5px 6px;
+
     display:flex;
+
     justify-content:space-around;
+
     align-items:center;
+
     gap:3px;
+
 }
 
 .guide-item{
+
     display:flex;
+
     flex-direction:column;
+
     align-items:center;
+
     justify-content:center;
+
     color:#f5faff;
+
     font-size:9px;
+
     font-weight:700;
+
     text-align:center;
+
     line-height:1.1;
+
 }
 
 .guide-swatch{
+
     width:16px;
+
     height:16px;
+
     border-radius:4px;
+
     margin-bottom:2px;
+
 }
 
 /* رسالة وسط الشاشة */
+
 #message-overlay{
+
     position:fixed;
+
     inset:0;
+
     background:rgba(0,0,0,.55);
+
     display:flex;
+
     align-items:center;
+
     justify-content:center;
+
     padding:20px;
+
     z-index:50;
+
     opacity:0;
+
     pointer-events:none;
+
     transition:opacity .25s;
+
 }
 
 #message-overlay.show{
+
     opacity:1;
+
     pointer-events:auto;
+
 }
 
 #message-box{
+
     width:min(380px,90vw);
+
     background:#081224;
+
     border:2px solid #fcc700;
+
     border-radius:16px;
+
     padding:20px 22px;
+
     text-align:center;
+
     box-shadow:0 10px 35px rgba(0,0,0,.45);
+
 }
 
 #message-title{
+
     color:#fcc700;
+
     font-size:22px;
+
     font-weight:800;
+
 }
 
 #message-sub{
+
     color:#f5faff;
+
     font-size:14px;
+
     font-weight:700;
+
     line-height:1.7;
+
     margin-top:7px;
+
     white-space:pre-line;
+
 }
 
 /* زر إعادة اللعب داخل رسالة النهاية */
+
 #message-restart{
+
     display:none;
+
     width:100%;
+
     height:46px;
+
     margin-top:15px;
+
     border:none;
+
     border-radius:12px;
+
     background:#fcc700;
+
     color:#050b18;
+
     font-size:16px;
+
     font-weight:900;
+
     cursor:pointer;
+
 }
 
 #message-restart:active{
+
     transform:scale(.96);
+
 }
 
 /* شاشات الآيفون القصيرة */
+
 @media (max-height:760px){
 
     #category-row{
+
         margin-top:40px;
+
     }
 
     #grid{
+
         width:min(260px,73vw);
+
         gap:5px;
+
     }
 
     .cell{
+
         font-size:21px;
+
     }
 
     .panel{
+
         min-height:76px;
+
         padding:5px 2px;
+
     }
 
     .panel-title{
+
         font-size:13px;
+
     }
 
     .panel-sub{
+
         font-size:10px;
+
     }
 
     .panel-value{
+
         font-size:16px;
+
     }
 
     .ctrl-btn{
+
         height:40px;
+
         font-size:14px;
+
     }
 
     .kb-key{
+
         height:33px;
+
         font-size:14px;
+
     }
 
     #guide{
+
         min-height:42px;
+
     }
 
     .guide-item{
+
         font-size:8px;
+
     }
 
     .guide-swatch{
+
         width:13px;
+
         height:13px;
+
     }
+
 }
 
 /* شاشات صغيرة جداً */
+
 @media (max-width:370px){
 
     #game-container{
+
         padding-left:8px;
+
         padding-right:8px;
+
     }
 
     #category-row{
+
         gap:4px;
+
     }
 
     .cat-btn{
+
         font-size:12px;
+
         height:37px;
+
     }
 
     #selected-category-label{
+
         font-size:14px;
+
     }
 
     #grid{
+
         width:min(245px,72vw);
+
     }
 
     .kb-key{
+
         width:27px;
+
         height:32px;
+
         font-size:13px;
+
     }
+
 }
+
 </style>
+
 </head>
 
 <body>
@@ -464,58 +795,83 @@ body{
     <div id="close-btn" aria-label="إغلاق">×</div>
 
     <!-- الفئات -->
+
     <div id="category-row">
 
-        <button class="cat-btn active" data-cat="الكل">
+        <button class="cat-btn active" data-cat="الكل" type="button">
+
             الكل
+
         </button>
 
-        <button class="cat-btn" data-cat="بلدان">
+        <button class="cat-btn" data-cat="بلدان" type="button">
+
             بلدان
+
         </button>
 
-        <button class="cat-btn" data-cat="أكل">
+        <button class="cat-btn" data-cat="أكل" type="button">
+
             أكل
+
         </button>
 
-        <button class="cat-btn" data-cat="حيوانات">
+        <button class="cat-btn" data-cat="حيوانات" type="button">
+
             حيوانات
+
         </button>
 
     </div>
 
     <div id="selected-category-label">
+
         الفئة: الكل
+
     </div>
 
-    <!-- شبكة الكلمات -->
+    <!-- الشبكة -->
+
     <div id="grid-wrapper">
+
         <div id="grid"></div>
+
     </div>
 
     <!-- الإحصائيات -->
+
     <div id="panels-row">
 
         <div class="panel">
 
             <div class="panel-title">
+
                 الإحصائيات
+
             </div>
 
             <div class="panel-sub" id="win-ratio">
+
                 نسبة الفوز: 0.0%
+
             </div>
 
             <div class="panel-sub" id="win-count">
+
                 الفوز: 0
+
             </div>
 
             <div class="panel-sub" id="games-played">
+
                 لعبت: 0/3
+
             </div>
 
             <div class="panel-sub" id="highest-score">
+
                 أعلى نقاط: 0
+
             </div>
 
         </div>
@@ -523,23 +879,33 @@ body{
         <div class="panel">
 
             <div class="panel-title" id="game-number">
+
                 اللعبة 1/3
+
             </div>
 
             <div class="panel-sub">
+
                 الحركات
+
             </div>
 
             <div class="panel-value" id="move-count">
+
                 0
+
             </div>
 
             <div class="panel-sub">
+
                 النقاط
+
             </div>
 
             <div class="panel-value" id="score-display">
+
                 0
+
             </div>
 
         </div>
@@ -547,29 +913,51 @@ body{
     </div>
 
     <!-- أزرار التحكم -->
+
     <div id="controls-row">
 
-        <button class="ctrl-btn reset" id="reset-btn" type="button">
+        <button
+
+            class="ctrl-btn reset"
+
+            id="reset-btn"
+
+            type="button">
+
             إعادة ↻
+
         </button>
 
-        <button class="ctrl-btn backspace" id="backspace-btn" type="button">
+        <button
+
+            class="ctrl-btn backspace"
+
+            id="backspace-btn"
+
+            type="button">
+
             حذف ⌫
+
         </button>
 
     </div>
 
     <!-- لوحة الحروف -->
+
     <div id="keyboard"></div>
 
     <!-- دليل الألوان -->
+
     <div id="guide">
 
         <div class="guide-item">
 
             <span
+
                 class="guide-swatch"
+
                 style="background:#05b84d">
+
             </span>
 
             صحيح
@@ -579,8 +967,11 @@ body{
         <div class="guide-item">
 
             <span
+
                 class="guide-swatch"
+
                 style="background:#f57a00">
+
             </span>
 
             موجود بمكان آخر
@@ -590,8 +981,11 @@ body{
         <div class="guide-item">
 
             <span
+
                 class="guide-swatch"
+
                 style="background:#4d5566">
+
             </span>
 
             غير موجود
@@ -602,7 +996,8 @@ body{
 
 </div>
 
-<!-- رسالة وسط الشاشة -->
+<!-- رسالة النهاية -->
+
 <div id="message-overlay">
 
     <div id="message-box">
@@ -612,9 +1007,13 @@ body{
         <div id="message-sub"></div>
 
         <button
+
             id="message-restart"
+
             type="button">
+
             إعادة اللعب ↻
+
         </button>
 
     </div>
@@ -622,175 +1021,293 @@ body{
 </div>
 
 <script>
+
 'use strict';
 
 /* ============================================================
-   قوائم الكلمات
-   جميع الكلمات يتم فحصها لاحقاً والتأكد من أنها 4 أحرف.
-============================================================ */
 
-/* =========================
    الحيوانات
-========================= */
+
+============================================================ */
 
 const ANIMALS = [
 
     'خروف',
+
     'حمار',
+
     'حصان',
+
     'ثعلب',
+
     'بقرة',
+
     'ماعز',
+
     'ناقة',
+
     'سنور',
+
     'طائر',
+
     'غراب',
+
     'بومة',
+
     'نحلة',
+
     'نملة',
+
     'دبور',
+
     'عقرب',
+
     'سمكة',
+
     'سمور',
+
     'حوتة',
+
     'لبوة',
+
     'فهدة',
+
     'نمرة',
+
     'بجعة',
+
     'أرنب',
+
     'كنغر',
+
     'ضفدع',
+
     'دودة',
+
     'يرقة',
+
     'عقاب',
+
     'ذباب'
 
 ];
 
-/* =========================
+/* ============================================================
+
    الأكل
-========================= */
+
+============================================================ */
 
 const FOODS = [
 
     'تفاح',
+
     'بطيخ',
+
     'رمان',
+
     'لبنة',
+
     'جبنة',
+
     'فلفل',
+
     'خيار',
+
     'سمسم',
+
     'طحين',
+
     'زبدة',
+
     'شعير',
+
     'مربى',
+
     'حساء',
+
     'كعكة',
+
     'عجوة',
+
     'موزة',
+
     'لوزة',
+
     'جوزة',
+
     'خبزة',
+
     'رغيف',
+
     'برغل',
+
     'قهوة',
+
     'حليب',
+
     'زبيب',
+
     'حمصة',
+
     'فولة'
 
 ];
 
-/* =========================
+/* ============================================================
+
    البلدان
-========================= */
+
+============================================================ */
 
 const COUNTRIES = [
 
     'غانا',
+
     'بنين',
+
     'تشاد',
+
     'توغو',
+
     'نيجر',
+
     'مالي',
+
     'تونس',
+
     'عمان',
+
     'عراق',
+
     'بيرو',
+
     'كوبا',
+
     'لاوس',
+
     'بنما',
+
     'كندا',
+
     'فيجي',
+
     'كويت'
 
 ];
 
-/* =========================
-   كلمات عامة
-========================= */
+/* ============================================================
+
+   الكلمات العامة
+
+============================================================ */
 
 const GENERAL = [
 
     'كتاب',
+
     'ريال',
+
     'منزل',
+
     'شارع',
+
     'جوال',
+
     'مطبخ',
+
     'مكيف',
+
     'كراج',
+
     'ساعة',
+
     'مكتب',
+
     'سرير',
+
     'هاتف',
+
     'جدار',
+
     'لعبة',
+
     'حاسب',
+
     'جهاز',
+
     'صباح',
+
     'مساء',
+
     'جميل',
+
     'كبير',
+
     'سريع',
+
     'بطيء',
+
     'قريب',
+
     'دفتر',
+
     'صورة',
+
     'غرفة',
+
     'حجرة',
+
     'نادي',
+
     'كرسي',
+
     'ليلة',
+
     'طريق',
+
     'نجمة',
+
     'سحاب',
+
     'جبال',
+
     'حائط',
+
     'طعام',
+
     'سماء'
 
 ];
 
 /* ============================================================
-   التأكد من 4 أحرف بالضبط
+
+   التأكد من 4 أحرف
+
 ============================================================ */
 
 function fourLetters(list){
 
     return [
+
         ...new Set(
+
             list.filter(
+
                 word => [...word].length === 4
+
             )
+
         )
+
     ];
 
 }
 
 /* ============================================================
+
    الفئات
+
 ============================================================ */
 
 const WORDS = {
@@ -806,39 +1323,51 @@ const WORDS = {
 };
 
 /*
-   عند اختيار "الكل":
 
-   كل فئة لها فرصة متساوية 25%.
+    عند اختيار "الكل":
 
-   بلدان   = 25%
-   أكل     = 25%
-   حيوانات = 25%
-   عامة    = 25%
+    بلدان   = 25%
+
+    أكل     = 25%
+
+    حيوانات = 25%
+
+    عامة    = 25%
+
 */
 
 const ALL_CATEGORIES = [
 
     'بلدان',
+
     'أكل',
+
     'حيوانات',
+
     'عامة'
 
 ];
 
 /* ============================================================
+
    الحروف العربية
+
 ============================================================ */
 
 const LETTERS = [
 
     'ا','ب','ت','ث','ج','ح','خ','د','ذ','ر',
+
     'ز','س','ش','ص','ض','ط','ظ','ع','غ','ف',
+
     'ق','ك','ل','م','ن','ه','و','ي'
 
 ];
 
 /* ============================================================
+
    حالة اللعبة
+
 ============================================================ */
 
 let state = {
@@ -859,6 +1388,14 @@ let state = {
 
     played:0,
 
+    /*
+
+       هذا هو أعلى رقم نقاط تاريخي.
+
+       لا يتم تصفيره عند الضغط على إعادة.
+
+    */
+
     best:0,
 
     usedWords:[],
@@ -874,7 +1411,9 @@ let state = {
 };
 
 /* ============================================================
+
    تحميل الحفظ
+
 ============================================================ */
 
 function load(){
@@ -882,10 +1421,15 @@ function load(){
     try{
 
         const data =
+
             JSON.parse(
+
                 localStorage.getItem(
+
                     'aword_github_state'
+
                 ) || 'null'
+
             );
 
         if(!data){
@@ -895,26 +1439,41 @@ function load(){
         }
 
         state.wins =
+
             Number(data.wins || 0);
 
         state.played =
+
             Number(data.played || 0);
 
+        /*
+
+           أعلى نقاط يتم تحميلها من الحفظ
+
+        */
+
         state.best =
+
             Number(data.best || 0);
 
         state.score =
+
             Number(data.score || 0);
 
         state.usedWords =
+
             Array.isArray(data.usedWords)
+
                 ? data.usedWords
+
                 : [];
 
     }catch(error){
 
         console.log(
+
             'تعذر تحميل الحفظ'
+
         );
 
     }
@@ -922,7 +1481,9 @@ function load(){
 }
 
 /* ============================================================
+
    حفظ اللعبة
+
 ============================================================ */
 
 function save(){
@@ -930,26 +1491,37 @@ function save(){
     try{
 
         localStorage.setItem(
+
             'aword_github_state',
+
             JSON.stringify({
 
                 wins:state.wins,
 
                 played:state.played,
 
-                best:state.best,
-
                 score:state.score,
+
+                /*
+
+                   حفظ أعلى نقاط بشكل مستقل
+
+                */
+
+                best:state.best,
 
                 usedWords:state.usedWords
 
             })
+
         );
 
     }catch(error){
 
         console.log(
+
             'تعذر حفظ اللعبة'
+
         );
 
     }
@@ -957,30 +1529,49 @@ function save(){
 }
 
 /* ============================================================
+
    خلط القائمة
+
 ============================================================ */
 
 function shuffle(list){
 
-    const array = [...list];
+    const array =
+
+        [...list];
 
     for(
-        let i = array.length - 1;
-        i > 0;
+
+        let i=array.length-1;
+
+        i>0;
+
         i--
+
     ){
 
         const j =
+
             Math.floor(
-                Math.random() * (i + 1)
+
+                Math.random() *
+
+                (i + 1)
+
             );
 
         [
+
             array[i],
+
             array[j]
+
         ] = [
+
             array[j],
+
             array[i]
+
         ];
 
     }
@@ -990,20 +1581,29 @@ function shuffle(list){
 }
 
 /* ============================================================
+
    اختيار فئة عشوائية بالتساوي
+
 ============================================================ */
 
 function chooseRandomCategory(){
 
     const availableCategories =
+
         ALL_CATEGORIES.filter(
+
             category =>
+
                 WORDS[category] &&
+
                 WORDS[category].length > 0
+
         );
 
     if(
+
         availableCategories.length === 0
+
     ){
 
         return 'أكل';
@@ -1011,89 +1611,118 @@ function chooseRandomCategory(){
     }
 
     return shuffle(
+
         availableCategories
+
     )[0];
 
 }
 
 /* ============================================================
+
    اختيار الكلمة
+
 ============================================================ */
 
 function chooseWord(){
 
-    /*
-       إذا كانت الفئة "الكل":
-
-       نختار الفئة أولاً.
-    */
-
     let selectedCategory =
+
         state.category;
 
+    /*
+
+       الكل = اختيار فئة أولاً
+
+    */
+
     if(
+
         selectedCategory === 'الكل'
+
     ){
 
         selectedCategory =
+
             chooseRandomCategory();
 
     }
 
     let pool =
-        WORDS[selectedCategory] || [];
 
-    /*
-       حماية إضافية.
-    */
+        WORDS[selectedCategory] || [];
 
     if(pool.length === 0){
 
         selectedCategory =
+
             chooseRandomCategory();
 
         pool =
+
             WORDS[selectedCategory] || [];
 
     }
 
     /*
-       منع تكرار الكلمة
-       قبل استنفاد كلمات الفئة.
+
+       منع تكرار الكلمات
+
     */
 
     let available =
+
         pool.filter(
+
             word =>
-                !state.usedWords.includes(word)
+
+                !state.usedWords.includes(
+
+                    word
+
+                )
+
         );
 
     /*
-       إذا انتهت كلمات هذه الفئة،
-       نسمح باستخدامها من جديد.
+
+       إذا استنفدت كلمات الفئة
+
     */
 
     if(
+
         available.length === 0
+
     ){
 
         available =
+
             pool.slice();
 
         state.usedWords =
+
             state.usedWords.filter(
+
                 word =>
+
                     !pool.includes(word)
+
             );
 
     }
 
     const word =
+
         shuffle(available)[0];
 
     if(word){
 
-        state.usedWords.push(word);
+        state.usedWords.push(
+
+            word
+
+        );
 
     }
 
@@ -1104,14 +1733,19 @@ function chooseWord(){
 }
 
 /* ============================================================
+
    رسم الشبكة
+
 ============================================================ */
 
 function renderGrid(){
 
     const grid =
+
         document.getElementById(
+
             'grid'
+
         );
 
     grid.innerHTML = '';
@@ -1119,31 +1753,45 @@ function renderGrid(){
     for(let i=0;i<20;i++){
 
         const cell =
+
             document.createElement(
+
                 'div'
+
             );
 
         cell.className =
+
             'cell';
 
         cell.id =
+
             'cell-' + i;
 
-        grid.appendChild(cell);
+        grid.appendChild(
+
+            cell
+
+        );
 
     }
 
 }
 
 /* ============================================================
+
    رسم لوحة الحروف
+
 ============================================================ */
 
 function renderKeyboard(){
 
     const keyboard =
+
         document.getElementById(
+
             'keyboard'
+
         );
 
     keyboard.innerHTML = '';
@@ -1161,51 +1809,73 @@ function renderKeyboard(){
     rows.forEach(row => {
 
         const rowElement =
+
             document.createElement(
+
                 'div'
+
             );
 
         rowElement.className =
+
             'kb-row';
 
         row.forEach(letter => {
 
             const key =
+
                 document.createElement(
+
                     'button'
+
                 );
 
             key.className =
+
                 'kb-key';
 
             key.type =
+
                 'button';
 
             key.textContent =
+
                 letter;
 
             key.dataset.letter =
+
                 letter;
 
             key.addEventListener(
+
                 'click',
+
                 function(event){
 
                     event.preventDefault();
 
-                    pressLetter(letter);
+                    pressLetter(
+
+                        letter
+
+                    );
 
                 }
+
             );
 
             rowElement.appendChild(
+
                 key
+
             );
 
         });
 
         keyboard.appendChild(
+
             rowElement
+
         );
 
     });
@@ -1213,176 +1883,291 @@ function renderKeyboard(){
 }
 
 /* ============================================================
+
    تحديث لوحة الحروف
+
 ============================================================ */
 
 function updateKeyboard(){
 
     document
-        .querySelectorAll('.kb-key')
-        .forEach(key => {
 
-            const status =
-                state.keyStatus[
-                    key.dataset.letter
-                ] || '';
+        .querySelectorAll(
 
-            key.className =
-                'kb-key';
+            '.kb-key'
 
-            if(
-                status === 'correct'
-            ){
+        )
 
-                key.classList.add(
-                    'used-correct'
-                );
+        .forEach(
 
-            }else if(
-                status === 'wrong'
-            ){
+            key => {
 
-                key.classList.add(
-                    'used-wrong'
-                );
+                const status =
 
-            }else if(
-                status === 'present'
-            ){
+                    state.keyStatus[
 
-                key.classList.add(
-                    'used-present'
-                );
+                        key.dataset.letter
+
+                    ] || '';
+
+                key.className =
+
+                    'kb-key';
+
+                if(
+
+                    status === 'correct'
+
+                ){
+
+                    key.classList.add(
+
+                        'used-correct'
+
+                    );
+
+                }else if(
+
+                    status === 'wrong'
+
+                ){
+
+                    key.classList.add(
+
+                        'used-wrong'
+
+                    );
+
+                }else if(
+
+                    status === 'present'
+
+                ){
+
+                    key.classList.add(
+
+                        'used-present'
+
+                    );
+
+                }
 
             }
 
-        });
+        );
 
 }
 
 /* ============================================================
+
    تحديث الإحصائيات
+
 ============================================================ */
 
 function updateStats(){
 
     const ratio =
+
         state.played
+
             ? (
+
                 state.wins /
+
                 state.played *
+
                 100
+
             ).toFixed(1)
+
             : '0.0';
 
     document.getElementById(
+
         'win-ratio'
+
     ).textContent =
+
         'نسبة الفوز: ' +
+
         ratio +
+
         '%';
 
     document.getElementById(
+
         'win-count'
+
     ).textContent =
+
         'الفوز: ' +
+
         state.wins;
 
     document.getElementById(
+
         'games-played'
+
     ).textContent =
+
         'لعبت: ' +
+
         Math.min(
+
             state.played,
+
             3
+
         ) +
+
         '/3';
 
+    /*
+
+       عرض أعلى نقاط التاريخية
+
+    */
+
     document.getElementById(
+
         'highest-score'
+
     ).textContent =
+
         'أعلى نقاط: ' +
+
         state.best;
 
     document.getElementById(
+
         'game-number'
+
     ).textContent =
+
         'اللعبة ' +
+
         Math.min(
+
             state.played + 1,
+
             3
+
         ) +
+
         '/3';
 
-    document.getElementById(
-        'move-count'
-    ).textContent =
-        state.moves;
+    /*
+
+       النقاط الحالية للمجموعة
+
+    */
 
     document.getElementById(
+
         'score-display'
+
     ).textContent =
+
         state.score;
+
+    document.getElementById(
+
+        'move-count'
+
+    ).textContent =
+
+        state.moves;
 
 }
 
 /* ============================================================
+
    تحديث الفئة
+
 ============================================================ */
 
 function updateCategory(){
 
     document
-        .querySelectorAll('.cat-btn')
-        .forEach(button => {
 
-            button.classList.toggle(
-                'active',
-                button.dataset.cat ===
-                state.category
-            );
+        .querySelectorAll(
 
-        });
+            '.cat-btn'
+
+        )
+
+        .forEach(
+
+            button => {
+
+                button.classList.toggle(
+
+                    'active',
+
+                    button.dataset.cat ===
+
+                    state.category
+
+                );
+
+            }
+
+        );
 
     document.getElementById(
+
         'selected-category-label'
+
     ).textContent =
+
         'الفئة: ' +
+
         state.category;
 
 }
 
 /* ============================================================
+
    تنظيف الشبكة
+
 ============================================================ */
 
 function clearGrid(){
 
     state.cells =
+
         Array(20).fill('');
 
     state.row =
+
         0;
 
     state.moves =
+
         0;
 
     state.keyStatus =
+
         {};
 
     for(let i=0;i<20;i++){
 
         const cell =
+
             document.getElementById(
+
                 'cell-' + i
+
             );
 
         if(cell){
 
             cell.textContent =
+
                 '';
 
             cell.className =
+
                 'cell';
 
         }
@@ -1396,58 +2181,89 @@ function clearGrid(){
 }
 
 /* ============================================================
+
    إظهار رسالة
+
 ============================================================ */
 
 function showMessage(
+
     title,
+
     text,
-    autoHide = 0,
-    showRestart = false
+
+    autoHide=0,
+
+    showRestart=false
+
 ){
 
     document.getElementById(
+
         'message-title'
+
     ).textContent =
+
         title;
 
     document.getElementById(
+
         'message-sub'
+
     ).textContent =
+
         text || '';
 
     const restartButton =
+
         document.getElementById(
+
             'message-restart'
+
         );
 
     restartButton.style.display =
+
         showRestart
+
             ? 'block'
+
             : 'none';
 
     document
+
         .getElementById(
+
             'message-overlay'
+
         )
+
         .classList.add(
+
             'show'
+
         );
 
     clearTimeout(
+
         state.timer
+
     );
 
     if(autoHide){
 
         state.timer =
+
             setTimeout(
+
                 function(){
 
                     hideMessage();
 
                 },
+
                 autoHide
+
             );
 
     }
@@ -1455,47 +2271,67 @@ function showMessage(
 }
 
 /* ============================================================
+
    إخفاء الرسالة
+
 ============================================================ */
 
 function hideMessage(){
 
     document
+
         .getElementById(
+
             'message-overlay'
+
         )
+
         .classList.remove(
+
             'show'
+
         );
 
     document.getElementById(
+
         'message-restart'
+
     ).style.display =
+
         'none';
 
     clearTimeout(
+
         state.timer
+
     );
 
     state.timer =
+
         null;
 
 }
 
 /* ============================================================
-   بدء الجولة
+
+   بدء جولة
+
 ============================================================ */
 
 function startRound(){
 
     clearTimeout(
+
         state.timer
+
     );
 
     state.locked =
+
         false;
 
     state.gameEnded =
+
         false;
 
     hideMessage();
@@ -1503,6 +2339,7 @@ function startRound(){
     clearGrid();
 
     state.word =
+
         chooseWord();
 
     updateStats();
@@ -1510,14 +2347,19 @@ function startRound(){
 }
 
 /* ============================================================
+
    الضغط على حرف
+
 ============================================================ */
 
 function pressLetter(letter){
 
     if(
+
         state.locked ||
+
         state.gameEnded
+
     ){
 
         return;
@@ -1525,32 +2367,45 @@ function pressLetter(letter){
     }
 
     const start =
+
         state.row * 4;
 
     const end =
+
         start + 4;
 
     for(
+
         let i=start;
+
         i<end;
+
         i++
+
     ){
 
         if(
+
             !state.cells[i]
+
         ){
 
             state.cells[i] =
+
                 letter;
 
             const cell =
+
                 document.getElementById(
+
                     'cell-' + i
+
                 );
 
             if(cell){
 
                 cell.textContent =
+
                     letter;
 
             }
@@ -1560,12 +2415,19 @@ function pressLetter(letter){
             updateStats();
 
             if(
+
                 state.cells
+
                     .slice(
+
                         start,
+
                         end
+
                     )
+
                     .every(Boolean)
+
             ){
 
                 checkGuess();
@@ -1581,14 +2443,19 @@ function pressLetter(letter){
 }
 
 /* ============================================================
+
    حذف حرف
+
 ============================================================ */
 
 function deleteLetter(){
 
     if(
+
         state.locked ||
+
         state.gameEnded
+
     ){
 
         return;
@@ -1596,40 +2463,57 @@ function deleteLetter(){
     }
 
     const start =
+
         state.row * 4;
 
     const end =
+
         start + 4;
 
     for(
+
         let i=end-1;
+
         i>=start;
+
         i--
+
     ){
 
         if(
+
             state.cells[i]
+
         ){
 
             state.cells[i] =
+
                 '';
 
             const cell =
+
                 document.getElementById(
+
                     'cell-' + i
+
                 );
 
             if(cell){
 
                 cell.textContent =
+
                     '';
 
             }
 
             state.moves =
+
                 Math.max(
+
                     0,
+
                     state.moves - 1
+
                 );
 
             updateStats();
@@ -1643,21 +2527,31 @@ function deleteLetter(){
 }
 
 /* ============================================================
+
    حالة الحرف
+
 ============================================================ */
 
 function setKeyStatus(
+
     letter,
+
     status
+
 ){
 
     const old =
+
         state.keyStatus[
+
             letter
+
         ];
 
     if(
+
         old === 'correct'
+
     ){
 
         return;
@@ -1665,8 +2559,11 @@ function setKeyStatus(
     }
 
     if(
+
         old === 'present' &&
+
         status === 'wrong'
+
     ){
 
         return;
@@ -1674,45 +2571,69 @@ function setKeyStatus(
     }
 
     state.keyStatus[
+
         letter
+
     ] =
+
         status;
 
 }
 
 /* ============================================================
+
    فحص التخمين
+
 ============================================================ */
 
 function checkGuess(){
 
     const start =
+
         state.row * 4;
 
     const guess =
+
         state.cells
+
             .slice(
+
                 start,
+
                 start + 4
+
             )
+
             .join('');
 
     const word =
+
         state.word;
 
-    /* تلوين الحروف */
+    /*
+
+       تلوين الحروف
+
+    */
 
     for(let i=0;i<4;i++){
 
         const letter =
+
             state.cells[
+
                 start + i
+
             ];
 
         const cell =
+
             document.getElementById(
+
                 'cell-' +
+
                 (start + i)
+
             );
 
         if(!cell){
@@ -1722,37 +2643,53 @@ function checkGuess(){
         }
 
         if(
+
             letter === word[i]
+
         ){
 
             cell.className =
+
                 'cell green';
 
             setKeyStatus(
+
                 letter,
+
                 'correct'
+
             );
 
         }else if(
+
             word.includes(letter)
+
         ){
 
             cell.className =
+
                 'cell orange';
 
             setKeyStatus(
+
                 letter,
+
                 'present'
+
             );
 
         }else{
 
             cell.className =
+
                 'cell gray';
 
             setKeyStatus(
+
                 letter,
+
                 'wrong'
+
             );
 
         }
@@ -1762,84 +2699,137 @@ function checkGuess(){
     updateKeyboard();
 
     /* ========================================================
+
        الفوز
+
     ======================================================== */
 
     if(
+
         guess === word
+
     ){
 
         state.locked =
+
             true;
 
         const points =
+
             [
+
                 100,
+
                 80,
+
                 60,
+
                 40,
+
                 20
+
             ][state.row] || 20;
 
         state.score +=
+
             points;
 
         state.wins++;
 
         state.played++;
 
-        state.best =
-            Math.max(
-                state.best,
-                state.score
-            );
+        /*
+
+           تحديث أعلى نقاط فقط إذا
+
+           كانت النتيجة الحالية أعلى.
+
+        */
+
+        if(
+
+            state.score >
+
+            state.best
+
+        ){
+
+            state.best =
+
+                state.score;
+
+        }
 
         save();
 
         updateStats();
 
         /*
+
            انتهت الألعاب الثلاث
+
         */
 
         if(
+
             state.played >= 3
+
         ){
 
             state.gameEnded =
+
                 true;
 
             showMessage(
+
                 '🎉 انتهت الألعاب 🎉',
 
                 'إجمالي النقاط: ' +
+
                 state.score +
+
                 '\nالفوز: ' +
+
                 state.wins +
-                ' من 3',
+
+                ' من 3' +
+
+                '\n🏆 أعلى نقاط: ' +
+
+                state.best,
 
                 0,
 
                 true
+
             );
 
         }else{
 
             showMessage(
+
                 'صحيح! 🎉',
+
                 'الجولة التالية بعد 3 ثوانٍ'
+
             );
 
             clearTimeout(
+
                 state.timer
+
             );
 
             state.timer =
+
                 setTimeout(
+
                     function(){
 
                         if(
+
                             state.played < 3
+
                         ){
 
                             startRound();
@@ -1847,7 +2837,9 @@ function checkGuess(){
                         }
 
                     },
+
                     3000
+
                 );
 
         }
@@ -1857,17 +2849,23 @@ function checkGuess(){
     }
 
     /* ========================================================
+
        محاولة خاطئة
+
     ======================================================== */
 
     state.row++;
 
     /*
+
        انتهت المحاولات الخمس
+
     */
 
     if(
+
         state.row >= 5
+
     ){
 
         state.played++;
@@ -1877,32 +2875,49 @@ function checkGuess(){
         updateStats();
 
         state.locked =
+
             true;
 
         /*
-           إذا انتهت الألعاب الثلاث:
-           لا نكشف الكلمة الصحيحة.
+
+           انتهت الألعاب الثلاث.
+
+           لا نكشف الكلمة.
+
         */
 
         if(
+
             state.played >= 3
+
         ){
 
             state.gameEnded =
+
                 true;
 
             showMessage(
+
                 '🏁 انتهت الألعاب 🏁',
 
                 'إجمالي النقاط: ' +
+
                 state.score +
+
                 '\nالفوز: ' +
+
                 state.wins +
-                ' من 3',
+
+                ' من 3' +
+
+                '\n🏆 أعلى نقاط: ' +
+
+                state.best,
 
                 0,
 
                 true
+
             );
 
             return;
@@ -1910,27 +2925,37 @@ function checkGuess(){
         }
 
         /*
-           في الجولة الأولى والثانية:
-           نكشف الكلمة الصحيحة.
+
+           كشف الكلمة في الجولة الأولى
+
+           والثانية فقط.
+
         */
 
         for(let i=0;i<4;i++){
 
             const index =
+
                 start + i;
 
             const cell =
+
                 document.getElementById(
+
                     'cell-' +
+
                     index
+
                 );
 
             if(cell){
 
                 cell.textContent =
+
                     word[i];
 
                 cell.className =
+
                     'cell green';
 
             }
@@ -1938,22 +2963,31 @@ function checkGuess(){
         }
 
         showMessage(
+
             'الكلمة الصحيحة',
 
             word +
+
             ' • الجولة التالية بعد 3 ثوانٍ'
+
         );
 
         clearTimeout(
+
             state.timer
+
         );
 
         state.timer =
+
             setTimeout(
+
                 function(){
 
                     if(
+
                         state.played < 3
+
                     ){
 
                         startRound();
@@ -1961,7 +2995,9 @@ function checkGuess(){
                     }
 
                 },
+
                 3000
+
             );
 
         return;
@@ -1969,67 +3005,107 @@ function checkGuess(){
     }
 
     /* ========================================================
+
        محاولة أخرى
+
     ======================================================== */
 
     showMessage(
+
         'حاول مرة أخرى!',
+
         'أكمل التخمين في الصف التالي',
+
         1200
+
     );
 
 }
 
 /* ============================================================
+
    إعادة اللعبة
+
 ============================================================ */
 
 function resetGame(){
 
     clearTimeout(
+
         state.timer
+
     );
 
     hideMessage();
 
     /*
-       تصفير الإحصائيات
+
+       تصفير إحصائيات المجموعة الحالية فقط
+
     */
 
     state.wins =
+
         0;
 
     state.played =
+
         0;
 
     state.score =
+
         0;
 
-    state.best =
-        0;
+    /*
+
+       مهم جداً:
+
+       لا يوجد هنا:
+
+       state.best = 0;
+
+       لأن أعلى نقاط يجب أن تبقى محفوظة.
+
+    */
 
     state.usedWords =
+
         [];
 
     state.gameEnded =
+
         false;
 
     state.locked =
+
         false;
 
     state.row =
+
         0;
 
     state.moves =
+
         0;
 
     state.keyStatus =
+
         {};
+
+    /*
+
+       حفظ البيانات.
+
+       state.best يبقى كما هو.
+
+    */
 
     save();
 
     /*
-       بدء 3 ألعاب جديدة
+
+       بدء 3 ألعاب جديدة.
+
     */
 
     startRound();
@@ -2039,21 +3115,23 @@ function resetGame(){
 }
 
 /* ============================================================
+
    اختيار الفئة
+
 ============================================================ */
 
 function selectCategory(
+
     category
+
 ){
 
-    /*
-       لا نسمح بتغيير الفئة
-       بعد انتهاء الجولة.
-    */
-
     if(
+
         state.locked ||
+
         state.gameEnded
+
     ){
 
         return;
@@ -2061,17 +3139,15 @@ function selectCategory(
     }
 
     state.category =
+
         category;
 
-    /*
-       تصفير سجل الكلمات
-       للفئة الجديدة.
-    */
-
     state.usedWords =
+
         [];
 
     state.gameEnded =
+
         false;
 
     save();
@@ -2083,14 +3159,19 @@ function selectCategory(
 }
 
 /* ============================================================
+
    زر الإغلاق
+
 ============================================================ */
 
 function closeGame(){
 
     if(
+
         document.referrer &&
+
         window.history.length > 1
+
     ){
 
         window.history.back();
@@ -2098,19 +3179,27 @@ function closeGame(){
     }else{
 
         showMessage(
+
             'خمّن الكلمة',
 
             'يمكنك إغلاق صفحة المتصفح من زر الرجوع أو زر الإغلاق.'
+
         );
 
         clearTimeout(
+
             state.timer
+
         );
 
         state.timer =
+
             setTimeout(
+
                 hideMessage,
+
                 2500
+
             );
 
     }
@@ -2118,48 +3207,67 @@ function closeGame(){
 }
 
 /* ============================================================
-   تهيئة اللعبة
+
+   التهيئة
+
 ============================================================ */
 
 function init(){
 
     /*
+
        تحميل البيانات
+
     */
 
     load();
 
     /*
-       إذا كانت الألعاب الثلاث
-       انتهت في جلسة سابقة،
-       نبدأ مجموعة جديدة.
+
+       إذا كانت مجموعة سابقة انتهت،
+
+       نصفر المجموعة الجديدة فقط.
+
+       لاحظ أننا لا نصفر best.
+
     */
 
     if(
+
         state.played >= 3
+
     ){
 
         state.wins =
+
             0;
 
         state.played =
+
             0;
 
         state.score =
-            0;
 
-        state.best =
             0;
 
         state.usedWords =
+
             [];
+
+        /*
+
+           state.best يبقى محفوظاً.
+
+        */
 
         save();
 
     }
 
     /*
-       رسم العناصر
+
+       رسم اللعبة
+
     */
 
     renderGrid();
@@ -2171,21 +3279,31 @@ function init(){
     updateStats();
 
     /*
-       بدء اللعبة
+
+       بدء الجولة الأولى
+
     */
 
     startRound();
 
     /* ========================================================
+
        زر إعادة
+
     ======================================================== */
 
     document
+
         .getElementById(
+
             'reset-btn'
+
         )
+
         .addEventListener(
+
             'click',
+
             function(event){
 
                 event.preventDefault();
@@ -2193,18 +3311,27 @@ function init(){
                 resetGame();
 
             }
+
         );
 
     /* ========================================================
+
        زر الحذف
+
     ======================================================== */
 
     document
+
         .getElementById(
+
             'backspace-btn'
+
         )
+
         .addEventListener(
+
             'click',
+
             function(event){
 
                 event.preventDefault();
@@ -2212,41 +3339,65 @@ function init(){
                 deleteLetter();
 
             }
+
         );
 
     /* ========================================================
+
        أزرار الفئات
+
     ======================================================== */
 
     document
-        .querySelectorAll('.cat-btn')
+
+        .querySelectorAll(
+
+            '.cat-btn'
+
+        )
+
         .forEach(
+
             button => {
 
                 button.addEventListener(
+
                     'click',
+
                     function(){
 
                         selectCategory(
+
                             this.dataset.cat
+
                         );
 
                     }
+
                 );
 
             }
+
         );
 
     /* ========================================================
-       زر إعادة اللعب داخل شاشة النهاية
+
+       إعادة اللعب من شاشة النهاية
+
     ======================================================== */
 
     document
+
         .getElementById(
+
             'message-restart'
+
         )
+
         .addEventListener(
+
             'click',
+
             function(event){
 
                 event.preventDefault();
@@ -2254,18 +3405,27 @@ function init(){
                 resetGame();
 
             }
+
         );
 
     /* ========================================================
+
        زر الإغلاق
+
     ======================================================== */
 
     document
+
         .getElementById(
+
             'close-btn'
+
         )
+
         .addEventListener(
+
             'click',
+
             function(event){
 
                 event.preventDefault();
@@ -2273,23 +3433,27 @@ function init(){
                 closeGame();
 
             }
+
         );
 
     /* ========================================================
+
        لوحة المفاتيح الفعلية
+
     ======================================================== */
 
     document.addEventListener(
+
         'keydown',
+
         function(event){
 
-            /*
-               حذف
-            */
-
             if(
+
                 event.key === 'Backspace' ||
+
                 event.key === 'Delete'
+
             ){
 
                 event.preventDefault();
@@ -2300,19 +3464,20 @@ function init(){
 
             }
 
-            /*
-               Enter
-            */
-
             if(
+
                 event.key === 'Enter'
+
             ){
 
                 event.preventDefault();
 
                 if(
+
                     state.locked ||
+
                     state.gameEnded
+
                 ){
 
                     return;
@@ -2320,15 +3485,23 @@ function init(){
                 }
 
                 const start =
+
                     state.row * 4;
 
                 if(
+
                     state.cells
+
                         .slice(
+
                             start,
+
                             start + 4
+
                         )
+
                         .every(Boolean)
+
                 ){
 
                     checkGuess();
@@ -2339,40 +3512,50 @@ function init(){
 
             }
 
-            /*
-               الحروف العربية
-            */
-
             const letter =
+
                 event.key;
 
             if(
+
                 LETTERS.includes(
+
                     letter
+
                 )
+
             ){
 
                 pressLetter(
+
                     letter
+
                 );
 
             }
 
         }
+
     );
 
 }
 
 /* ============================================================
+
    تشغيل اللعبة
+
 ============================================================ */
 
 document.addEventListener(
+
     'DOMContentLoaded',
+
     init
+
 );
 
 </script>
 
 </body>
+
 </html>
